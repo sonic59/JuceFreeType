@@ -110,11 +110,7 @@ public:
     FTTypefaceList()
         : library (new FTLibWrapper())
     {
-#if JUCE_ANDROID
-        AndroidFontFileIterator fontFileIterator;
-#else
-        LinuxFontFileIterator fontFileIterator;
-#endif
+        FontFileIterator fontFileIterator;
 
         while (fontFileIterator.next())
         {
