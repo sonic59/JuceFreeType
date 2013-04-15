@@ -139,11 +139,15 @@ namespace juce
 
 #elif JUCE_LINUX
  #include "native/juce_linux_Fonts.cpp"
+ #include "native/juce_freetype_Fonts.cpp"
 
 #elif JUCE_ANDROID
  #include "../juce_core/native/juce_android_JNIHelpers.h"
  #include "native/juce_android_GraphicsContext.cpp"
  #include "native/juce_android_Fonts.cpp"
+ #if JUCE_USE_FREETYPE_AMALGAMATED
+  #include "native/juce_freetype_Fonts.cpp"
+ #endif
 
 #endif
 

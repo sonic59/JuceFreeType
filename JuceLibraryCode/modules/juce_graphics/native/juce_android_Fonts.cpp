@@ -31,6 +31,36 @@
 DECLARE_JNI_CLASS (TypefaceClass, "android/graphics/Typeface");
 #undef JNI_CLASS_MEMBERS
 
+#if JUCE_USE_FREETYPE_AMALGAMATED
+//==============================================================================
+class AndroidFontFileIterator
+{
+public:
+    AndroidFontFileIterator()
+        : index (-1)
+    {
+        File ("/system/fonts").findChildFiles (fonts, File::findFiles, false, "*.ttf");
+    }
+
+    bool next()
+    {
+        index++;
+
+        if (index >= fonts.size())
+            return false;
+
+        return true;
+    }
+
+    File getFile() const    { jassert (fonts[index].existsAsFile()); return fonts[index]; }
+
+private:
+    Array<File> fonts;
+    int index;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AndroidFontFileIterator)
+};
+#else
 
 //==============================================================================
 StringArray Font::findAllTypefaceNames()
@@ -283,3 +313,5 @@ bool TextLayout::createNativeLayout (const AttributedString&)
 {
     return false;
 }
+
+#endif

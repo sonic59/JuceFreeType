@@ -72,84 +72,17 @@ struct FTFaceWrapper     : public ReferenceCountedObject
 };
 
 //==============================================================================
-class LinuxFontFileIterator
-{
-public:
-    LinuxFontFileIterator()
-        : index (0)
-    {
-        fontDirs.addTokens (CharPointer_UTF8 (getenv ("JUCE_FONT_PATH")), ";,", String::empty);
-        fontDirs.removeEmptyStrings (true);
-
-        if (fontDirs.size() == 0)
-        {
-            const ScopedPointer<XmlElement> fontsInfo (XmlDocument::parse (File ("/etc/fonts/fonts.conf")));
-
-            if (fontsInfo != nullptr)
-            {
-                forEachXmlChildElementWithTagName (*fontsInfo, e, "dir")
-                {
-                    String fontPath (e->getAllSubText().trim());
-
-                    if (fontPath.isNotEmpty())
-                    {
-                        if (e->getStringAttribute ("prefix") == "xdg")
-                        {
-                            String xdgDataHome (SystemStats::getEnvironmentVariable ("XDG_DATA_HOME", String::empty));
-
-                            if (xdgDataHome.trimStart().isEmpty())
-                                xdgDataHome = "~/.local/share";
-
-                            fontPath = File (xdgDataHome).getChildFile (fontPath).getFullPathName();
-                        }
-
-                        fontDirs.add (fontPath);
-                    }
-                }
-            }
-        }
-
-        if (fontDirs.size() == 0)
-            fontDirs.add ("/usr/X11R6/lib/X11/fonts");
-
-        fontDirs.removeDuplicates (false);
-    }
-
-    bool next()
-    {
-        if (iter != nullptr)
-        {
-            while (iter->next())
-                if (getFile().hasFileExtension ("ttf;pfb;pcf;otf"))
-                    return true;
-        }
-
-        if (index >= fontDirs.size())
-            return false;
-
-        iter = new DirectoryIterator (File::getCurrentWorkingDirectory()
-                                         .getChildFile (fontDirs [index++]), true);
-        return next();
-    }
-
-    File getFile() const    { jassert (iter != nullptr); return iter->getFile(); }
-
-private:
-    StringArray fontDirs;
-    int index;
-    ScopedPointer<DirectoryIterator> iter;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LinuxFontFileIterator)
-};
-
-//==============================================================================
 class FTTypefaceList  : private DeletedAtShutdown
 {
 public:
     FTTypefaceList()
         : library (new FTLibWrapper())
     {
+#if JUCE_ANDROID
+        AndroidFontFileIterator fontFileIterator;
+#else
         LinuxFontFileIterator fontFileIterator;
+#endif
 
         while (fontFileIterator.next())
         {
@@ -483,88 +416,6 @@ StringArray Font::findAllTypefaceNames()
 StringArray Font::findAllTypefaceStyles (const String& family)
 {
     return FTTypefaceList::getInstance()->findAllTypefaceStyles (family);
-}
-
-//==============================================================================
-struct DefaultFontNames
-{
-    DefaultFontNames()
-        : defaultSans  (getDefaultSansSerifFontName()),
-          defaultSerif (getDefaultSerifFontName()),
-          defaultFixed (getDefaultMonospacedFontName())
-    {
-    }
-
-    String defaultSans, defaultSerif, defaultFixed;
-
-private:
-    static String pickBestFont (const StringArray& names, const char* const* choicesArray)
-    {
-        const StringArray choices (choicesArray);
-
-        for (int j = 0; j < choices.size(); ++j)
-            if (names.contains (choices[j], true))
-                return choices[j];
-
-        for (int j = 0; j < choices.size(); ++j)
-            for (int i = 0; i < names.size(); ++i)
-                if (names[i].startsWithIgnoreCase (choices[j]))
-                    return names[i];
-
-        for (int j = 0; j < choices.size(); ++j)
-            for (int i = 0; i < names.size(); ++i)
-                if (names[i].containsIgnoreCase (choices[j]))
-                    return names[i];
-
-        return names[0];
-    }
-
-    static String getDefaultSansSerifFontName()
-    {
-        StringArray allFonts;
-        FTTypefaceList::getInstance()->getSansSerifNames (allFonts);
-
-        const char* targets[] = { "Verdana", "Bitstream Vera Sans", "Luxi Sans",
-                                  "Liberation Sans", "DejaVu Sans", "Sans", 0 };
-        return pickBestFont (allFonts, targets);
-    }
-
-    static String getDefaultSerifFontName()
-    {
-        StringArray allFonts;
-        FTTypefaceList::getInstance()->getSerifNames (allFonts);
-
-        const char* targets[] = { "Bitstream Vera Serif", "Times", "Nimbus Roman",
-                                  "Liberation Serif", "DejaVu Serif", "Serif", 0 };
-        return pickBestFont (allFonts, targets);
-    }
-
-    static String getDefaultMonospacedFontName()
-    {
-        StringArray allFonts;
-        FTTypefaceList::getInstance()->getMonospacedNames (allFonts);
-
-        const char* targets[] = { "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Sans Mono",
-                                  "Liberation Mono", "Courier", "DejaVu Mono", "Mono", 0 };
-        return pickBestFont (allFonts, targets);
-    }
-
-    JUCE_DECLARE_NON_COPYABLE (DefaultFontNames)
-};
-
-Typeface::Ptr Font::getDefaultTypefaceForFont (const Font& font)
-{
-    static DefaultFontNames defaultNames;
-
-    String faceName (font.getTypefaceName());
-
-    if (faceName == getDefaultSansSerifFontName())       faceName = defaultNames.defaultSans;
-    else if (faceName == getDefaultSerifFontName())      faceName = defaultNames.defaultSerif;
-    else if (faceName == getDefaultMonospacedFontName()) faceName = defaultNames.defaultFixed;
-
-    Font f (font);
-    f.setTypefaceName (faceName);
-    return Typeface::createSystemTypefaceFor (f);
 }
 
 bool TextLayout::createNativeLayout (const AttributedString&)
