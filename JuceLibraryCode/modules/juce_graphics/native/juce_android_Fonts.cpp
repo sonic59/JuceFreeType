@@ -31,6 +31,34 @@
 DECLARE_JNI_CLASS (TypefaceClass, "android/graphics/Typeface");
 #undef JNI_CLASS_MEMBERS
 
+struct DefaultFontNames
+{
+    DefaultFontNames()
+        : defaultSans  ("sans"),
+          defaultSerif ("serif"),
+          defaultFixed ("monospace"),
+          defaultFallback ("sans")
+    {
+    }
+
+    String defaultSans, defaultSerif, defaultFixed, defaultFallback;
+};
+
+Typeface::Ptr Font::getDefaultTypefaceForFont (const Font& font)
+{
+    static DefaultFontNames defaultNames;
+
+    String faceName (font.getTypefaceName());
+
+    if (faceName == Font::getDefaultSansSerifFontName())       faceName = defaultNames.defaultSans;
+    else if (faceName == Font::getDefaultSerifFontName())      faceName = defaultNames.defaultSerif;
+    else if (faceName == Font::getDefaultMonospacedFontName()) faceName = defaultNames.defaultFixed;
+
+    Font f (font);
+    f.setTypefaceName (faceName);
+    return Typeface::createSystemTypefaceFor (f);
+}
+
 #if JUCE_USE_FREETYPE_AMALGAMATED
 //==============================================================================
 class AndroidFontFileIterator
@@ -89,34 +117,6 @@ StringArray Font::findAllTypefaceStyles (const String& family)
                                         .fromLastOccurrenceOf ("-", false, false));
 
     return results;
-}
-
-struct DefaultFontNames
-{
-    DefaultFontNames()
-        : defaultSans  ("sans"),
-          defaultSerif ("serif"),
-          defaultFixed ("monospace"),
-          defaultFallback ("sans")
-    {
-    }
-
-    String defaultSans, defaultSerif, defaultFixed, defaultFallback;
-};
-
-Typeface::Ptr Font::getDefaultTypefaceForFont (const Font& font)
-{
-    static DefaultFontNames defaultNames;
-
-    String faceName (font.getTypefaceName());
-
-    if (faceName == Font::getDefaultSansSerifFontName())       faceName = defaultNames.defaultSans;
-    else if (faceName == Font::getDefaultSerifFontName())      faceName = defaultNames.defaultSerif;
-    else if (faceName == Font::getDefaultMonospacedFontName()) faceName = defaultNames.defaultFixed;
-
-    Font f (font);
-    f.setTypefaceName (faceName);
-    return Typeface::createSystemTypefaceFor (f);
 }
 
 const float referenceFontSize = 256.0f;
