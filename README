@@ -1,0 +1,6 @@
+Android has poor font support. There is no way to install OS wide fonts. There is no font enumeration API. It is not possible to iterate a Path to get glyph outlines.
+
+By using FreeType we can completely bypass the Android font system resulting in better support for fonts.
+
+This repo improves upon the last (JuceAndroidFonts) by merging all the FreeType code into a single file used both by the Linux and Android platforms.
+This repo contains it's own copy of Juce as well as the default GUI project out of Introjucer.
