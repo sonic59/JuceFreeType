@@ -24,10 +24,7 @@
 */
 
 //==============================================================================
-class LinuxFontFileIterator
-{
-public:
-    LinuxFontFileIterator()
+FontFileIterator::FontFileIterator()
         : index (0)
     {
         fontDirs.addTokens (CharPointer_UTF8 (getenv ("JUCE_FONT_PATH")), ";,", String::empty);
@@ -66,33 +63,6 @@ public:
 
         fontDirs.removeDuplicates (false);
     }
-
-    bool next()
-    {
-        if (iter != nullptr)
-        {
-            while (iter->next())
-                if (getFile().hasFileExtension ("ttf;pfb;pcf;otf"))
-                    return true;
-        }
-
-        if (index >= fontDirs.size())
-            return false;
-
-        iter = new DirectoryIterator (File::getCurrentWorkingDirectory()
-                                         .getChildFile (fontDirs [index++]), true);
-        return next();
-    }
-
-    File getFile() const    { jassert (iter != nullptr); return iter->getFile(); }
-
-private:
-    StringArray fontDirs;
-    int index;
-    ScopedPointer<DirectoryIterator> iter;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LinuxFontFileIterator)
-};
 
 //==============================================================================
 struct DefaultFontNames

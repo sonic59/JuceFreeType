@@ -61,33 +61,11 @@ Typeface::Ptr Font::getDefaultTypefaceForFont (const Font& font)
 
 #if JUCE_USE_FREETYPE_AMALGAMATED
 //==============================================================================
-class AndroidFontFileIterator
-{
-public:
-    AndroidFontFileIterator()
+FontFileIterator::FontFileIterator()
         : index (-1)
     {
-        File ("/system/fonts").findChildFiles (fonts, File::findFiles, false, "*.ttf");
+        fontDirs.add ("/system/fonts");
     }
-
-    bool next()
-    {
-        index++;
-
-        if (index >= fonts.size())
-            return false;
-
-        return true;
-    }
-
-    File getFile() const    { jassert (fonts[index].existsAsFile()); return fonts[index]; }
-
-private:
-    Array<File> fonts;
-    int index;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AndroidFontFileIterator)
-};
 #else
 
 //==============================================================================

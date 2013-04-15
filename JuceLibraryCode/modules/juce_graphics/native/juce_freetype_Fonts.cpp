@@ -72,6 +72,38 @@ struct FTFaceWrapper     : public ReferenceCountedObject
 };
 
 //==============================================================================
+class FontFileIterator
+{
+public:
+    FontFileIterator();
+    bool next()
+    {
+        if (iter != nullptr)
+        {
+            while (iter->next())
+                if (getFile().hasFileExtension ("ttf;pfb;pcf;otf"))
+                    return true;
+        }
+
+        if (index >= fontDirs.size())
+            return false;
+
+        iter = new DirectoryIterator (File::getCurrentWorkingDirectory()
+                                         .getChildFile (fontDirs [index++]), true);
+        return next();
+    }
+
+    File getFile() const    { jassert (iter != nullptr); return iter->getFile(); }
+
+private:
+    StringArray fontDirs;
+    int index;
+    ScopedPointer<DirectoryIterator> iter;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (FontFileIterator)
+};
+
+//==============================================================================
 class FTTypefaceList  : private DeletedAtShutdown
 {
 public:
