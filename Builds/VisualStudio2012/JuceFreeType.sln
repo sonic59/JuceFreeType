@@ -1,0 +1,19 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2012
+Project("{B7353439-0215-2085-3056-0BF8C77876A4}") = "JuceFreeType", "JuceFreeType.vcxproj", "{FFDA37CD-06CB-3258-D07C-C648F44A4A76}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FFDA37CD-06CB-3258-D07C-C648F44A4A76}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FFDA37CD-06CB-3258-D07C-C648F44A4A76}.Debug|Win32.Build.0 = Debug|Win32
+		{FFDA37CD-06CB-3258-D07C-C648F44A4A76}.Release|Win32.ActiveCfg = Release|Win32
+		{FFDA37CD-06CB-3258-D07C-C648F44A4A76}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
